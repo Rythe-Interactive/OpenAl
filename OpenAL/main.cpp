@@ -6,6 +6,7 @@ typedef ALboolean alBool;
 
 static void list_audio_devices(const ALCchar* devices);
 static void openal_error();
+static 
 
 int main()
 {
@@ -103,3 +104,6 @@ static void openal_error()
 	if (error != AL_NO_ERROR)
 		std::cout << "ERROR: OpenAl error: " << error << std::endl;
 }
+
+#define MIMIMP3_IMPLEMENTATION
+#include "minimp3.h"
