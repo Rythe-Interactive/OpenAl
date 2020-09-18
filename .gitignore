@@ -1,2 +1,4 @@
 openal-soft-1.20.1-bin/
+OpenAl/minimp3.h
 OpenAl/minimp3_ex.h
+OpenAl/audio

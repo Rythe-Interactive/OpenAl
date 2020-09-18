@@ -106,4 +106,15 @@ static void openal_error()
 }
 
 #define MIMIMP3_IMPLEMENTATION
-#include "minimp3.h"
+#include "minimp3_ex.h"
+
+static mp3dec_t loadMp3(const char* path)
+{
+	mp3dec_t mp3d;
+	mp3dec_file_info_t info;
+	if (mp3dec_load(&mp3d, path, &info, NULL, NULL))
+	{
+		std::cout << "ERROR: Loading of Audio file went wrong\n";
+	}
+	return mp3d;
+}
