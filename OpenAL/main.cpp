@@ -2,11 +2,15 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
+#define MINIMP3_IMPLEMENTATION
+#include "minimp3.h"
+#include "minimp3_ex.h"
+
 typedef ALboolean alBool;
 
 static void list_audio_devices(const ALCchar* devices);
 static void openal_error();
-static 
+static mp3dec_file_info_t loadMp3(const char* path);
 
 int main()
 {
@@ -72,8 +76,67 @@ int main()
 	openal_error();
 
 	// Load an audio stream to buffer
+	mp3dec_file_info_t audio = loadMp3("audio/08 You're Dead.mp3"); 
+	ALenum format = AL_FORMAT_STEREO8;
+	bool stereo = audio.channels > 1;
+	std::cout << audio.samples << std::endl;
+
+	switch (audio.samples) {
+	case 16:
+		if (stereo)
+			format = AL_FORMAT_STEREO16;
+		else
+			format = AL_FORMAT_MONO16;
+		break;
+	case 8:
+		if (stereo)
+			format = AL_FORMAT_STEREO8;
+		else
+			format = AL_FORMAT_MONO8;
+		break;
+	}
+	alBufferData(buffer, AL_FORMAT_STEREO16, audio.buffer, audio.samples*sizeof(mp3d_sample_t), audio.hz);
+	openal_error();
+	
+	// Binding source to buffer
+	alSourcei(source, AL_BUFFER, buffer);
+	openal_error();
+
+	// Playing the source
+	alSourcePlay(source);
+	openal_error();
+
+	ALint source_state;
+	alGetSourcei(source, AL_SOURCE_STATE, &source_state);
+	openal_error();
+
+	while (source_state == AL_PLAYING)
+	{
+		alGetSourcei(source, AL_SOURCE_STATE, &source_state);
+		openal_error();
+	}
 
 	getchar();
+
+	alSourcePlay(source);
+	alGetSourcei(source, AL_SOURCE_STATE, &source_state);
+	openal_error();
+
+	while (source_state == AL_PLAYING)
+	{
+		alGetSourcei(source, AL_SOURCE_STATE, &source_state);
+		openal_error();
+	}
+
+	//Cleanup context
+	alDeleteSources(1, &source);
+	alDeleteBuffers(1, &buffer);
+	device = alcGetContextsDevice(openAl);
+	alcMakeContextCurrent(NULL);
+	alcDestroyContext(openAl);
+	alcCloseDevice(device);
+	free(audio.buffer);
+
 
 	return 0;
 }
@@ -105,10 +168,7 @@ static void openal_error()
 		std::cout << "ERROR: OpenAl error: " << error << std::endl;
 }
 
-#define MIMIMP3_IMPLEMENTATION
-#include "minimp3_ex.h"
-
-static mp3dec_t loadMp3(const char* path)
+static mp3dec_file_info_t loadMp3(const char* path)
 {
 	mp3dec_t mp3d;
 	mp3dec_file_info_t info;
@@ -116,5 +176,5 @@ static mp3dec_t loadMp3(const char* path)
 	{
 		std::cout << "ERROR: Loading of Audio file went wrong\n";
 	}
-	return mp3d;
+	return info;
 }
