@@ -77,24 +77,6 @@ int main()
 
 	// Load an audio stream to buffer
 	mp3dec_file_info_t audio = loadMp3("audio/08 You're Dead.mp3"); 
-	ALenum format = AL_FORMAT_STEREO8;
-	bool stereo = audio.channels > 1;
-	std::cout << audio.samples << std::endl;
-
-	switch (audio.samples) {
-	case 16:
-		if (stereo)
-			format = AL_FORMAT_STEREO16;
-		else
-			format = AL_FORMAT_MONO16;
-		break;
-	case 8:
-		if (stereo)
-			format = AL_FORMAT_STEREO8;
-		else
-			format = AL_FORMAT_MONO8;
-		break;
-	}
 	alBufferData(buffer, AL_FORMAT_STEREO16, audio.buffer, audio.samples*sizeof(mp3d_sample_t), audio.hz);
 	openal_error();
 	
@@ -103,29 +85,26 @@ int main()
 	openal_error();
 
 	// Playing the source
-	alSourcePlay(source);
-	openal_error();
+	//alSourcePlay(source);
+	//openal_error();
 
-	ALint source_state;
+	/*ALint source_state;
 	alGetSourcei(source, AL_SOURCE_STATE, &source_state);
-	openal_error();
+	openal_error();*/
 
-	while (source_state == AL_PLAYING)
+	while (true)
 	{
-		alGetSourcei(source, AL_SOURCE_STATE, &source_state);
-		openal_error();
-	}
-
-	getchar();
-
-	alSourcePlay(source);
-	alGetSourcei(source, AL_SOURCE_STATE, &source_state);
-	openal_error();
-
-	while (source_state == AL_PLAYING)
-	{
-		alGetSourcei(source, AL_SOURCE_STATE, &source_state);
-		openal_error();
+		int in;
+		std::cin >> in;
+		if (in == 0)
+		{
+			alSourcePlay(source);
+		}
+		if (in == 1)
+		{
+			alSourcePause(source);
+		}
+		if (in == 99) break;
 	}
 
 	//Cleanup context
