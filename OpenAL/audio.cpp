@@ -7,7 +7,7 @@ unsigned char Audio::m_initialized = 0b0;
 
 Audio::Audio(const char* file)
 {
-	if (!init) return;
+	if (!init()) return;
 	alGenSources((ALuint)1, &m_source);
 	alSourcef(m_source, AL_PITCH, 1);
 	alSourcef(m_source, AL_GAIN, 1);
@@ -90,7 +90,7 @@ bool Audio::init()
 			return false;
 		}
 	}
-	if (!m_initialized & 4)
+	if (!(m_initialized & 4))
 	{
 		//set bit 2
 		m_initialized |= 4; //set bit 2
