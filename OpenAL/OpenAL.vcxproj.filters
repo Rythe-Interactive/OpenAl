@@ -18,12 +18,18 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="minimp3.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="minimp3_ex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="audio.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

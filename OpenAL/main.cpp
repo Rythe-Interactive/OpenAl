@@ -1,10 +1,6 @@
 #include <iostream>
-#include <AL/al.h>
-#include <AL/alc.h>
-
 #define MINIMP3_IMPLEMENTATION
-#include "minimp3.h"
-#include "minimp3_ex.h"
+#include "audio.hpp"
 
 typedef ALboolean alBool;
 

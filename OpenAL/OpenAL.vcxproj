@@ -144,9 +144,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="audio.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="audio.hpp" />
     <ClInclude Include="minimp3.h" />
     <ClInclude Include="minimp3_ex.h" />
   </ItemGroup>
