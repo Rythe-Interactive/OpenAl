@@ -18,6 +18,12 @@ public:
 	Audio(const char* file);
 	~Audio();
 	void play();
+	bool isPlaying();
+	void pause();
+	void stop();
+	float getPitch() { return m_pitch; };
+	void setPitch(float pitch = 1);
+	void gain(float gain = 1);
 
 private:
 	static ALCdevice* m_device;
@@ -38,6 +44,8 @@ private:
 	ALuint m_buffer;
 	mp3dec_t m_mp3dec;
 	mp3dec_file_info_t m_audioInfo;
+
+	float m_pitch = 1.0f;
 
 };
 

@@ -1,5 +1,6 @@
 #include "audio.hpp"
 #include <iostream>
+#include <string>
 
 ALCdevice* Audio::m_device = nullptr;
 ALCcontext* Audio::m_context = nullptr;
@@ -9,7 +10,7 @@ Audio::Audio(const char* file)
 {
 	if (!init()) return;
 	alGenSources((ALuint)1, &m_source);
-	alSourcef(m_source, AL_PITCH, 1);
+	alSourcef(m_source, AL_PITCH, m_pitch);
 	alSourcef(m_source, AL_GAIN, 1);
 	alSource3f(m_source, AL_POSITION, 0,0,0);
 	alSource3f(m_source, AL_VELOCITY, 0,0,0);
@@ -19,7 +20,7 @@ Audio::Audio(const char* file)
 
 	if (mp3dec_load(&m_mp3dec, file, &m_audioInfo, NULL, NULL))
 	{
-		std::cout << "ERROR: Failed to load Audio file!\n";
+		printf("ERROR: Failed to load Audio file: %s\n", file);
 		return;
 	}
 
@@ -37,6 +38,34 @@ Audio::~Audio()
 void Audio::play()
 {
 	alSourcePlay(m_source);
+}
+
+bool Audio::isPlaying()
+{
+	ALint sourceState;
+	alGetSourcei(m_source, AL_SOURCE_STATE, &sourceState);
+	return sourceState == AL_PLAYING;
+}
+
+void Audio::pause()
+{
+	alSourcePause(m_source);
+}
+
+void Audio::stop()
+{
+	alSourceStop(m_source);
+}
+
+void Audio::setPitch(float pitch)
+{
+	m_pitch = pitch;
+	alSourcef(m_source, AL_PITCH, pitch);
+}
+
+void Audio::gain(float gain)
+{
+	alSourcef(m_source, AL_GAIN, gain);
 }
 
 void Audio::openal_error()
