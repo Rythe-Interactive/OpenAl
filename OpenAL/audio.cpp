@@ -1,20 +1,25 @@
 #include "audio.hpp"
 #include <iostream>
 #include <string>
+#include <stdio.h>
 
 ALCdevice* Audio::m_device = nullptr;
 ALCcontext* Audio::m_context = nullptr;
 unsigned char Audio::m_initialized = 0b0;
 
-Audio::Audio(const char* file)
+Audio::Audio(const char* file, ALenum format)
 {
 	if (!init()) return;
 	alGenSources((ALuint)1, &m_source);
 	alSourcef(m_source, AL_PITCH, m_pitch);
-	alSourcef(m_source, AL_GAIN, 1);
+	//alSourcef(m_source, AL_GAIN, 1);
 	alSource3f(m_source, AL_POSITION, 0,0,0);
 	alSource3f(m_source, AL_VELOCITY, 0,0,0);
 	alSourcei(m_source, AL_LOOPING, AL_FALSE);
+
+	alSourcef(m_source, AL_ROLLOFF_FACTOR, 2.0f);
+	alSourcef(m_source, AL_REFERENCE_DISTANCE, 6);
+	alSourcef(m_source, AL_MAX_DISTANCE, 15);
 
 	alGenBuffers((ALuint)1, &m_buffer);
 
@@ -24,8 +29,16 @@ Audio::Audio(const char* file)
 		return;
 	}
 
-	alBufferData(m_buffer, AL_FORMAT_STEREO16, m_audioInfo.buffer, m_audioInfo.samples * sizeof(mp3d_sample_t), m_audioInfo.hz);
+	alBufferData(m_buffer, format, m_audioInfo.buffer, m_audioInfo.samples * sizeof(mp3d_sample_t), m_audioInfo.hz);
 	alSourcei(m_source, AL_BUFFER, m_buffer);
+
+	std::cout << "buffer: \t" << m_audioInfo.buffer <<
+		"\nChannels: \t" << m_audioInfo.channels <<
+		"\nHz: \t\t" << m_audioInfo.hz <<
+		"\nLayer \t\t" << m_audioInfo.layer <<
+		"\nSamples: \t" << m_audioInfo.samples <<
+		"\navg kbps: \t" << m_audioInfo.avg_bitrate_kbps <<
+		"\n-------------------------------------\n";
 }
 
 Audio::~Audio()
@@ -63,9 +76,19 @@ void Audio::setPitch(float pitch)
 	alSourcef(m_source, AL_PITCH, pitch);
 }
 
+float Audio::getPitch()
+{
+	return m_pitch;
+}
+
 void Audio::gain(float gain)
 {
 	alSourcef(m_source, AL_GAIN, gain);
+}
+
+void Audio::setFormat(ALenum format)
+{
+	alBufferData(m_buffer, format, m_audioInfo.buffer, m_audioInfo.samples * sizeof(mp3d_sample_t), m_audioInfo.hz);
 }
 
 void Audio::openal_error()
@@ -104,6 +127,21 @@ void Audio::listenerOrientation(const float* values)
 
 #pragma endregion
 
+void Audio::query_information()
+{
+	const ALchar* vendor = alGetString(AL_VENDOR);
+	const ALchar* version = alGetString(AL_VERSION);
+	const ALchar* renderer = alGetString(AL_RENDERER);
+	const ALchar* openALExtensions = alGetString(AL_EXTENSIONS);
+	const ALchar* ALCExtensions = alcGetString(m_device, ALC_EXTENSIONS);
+	//const ALchar* auxSends = alGetString(AL_MAX);
+	printf("\tOpenAL info:\n\tVendor: %s\n\tVersion: %s\n\tRenderer: %s\n\tOpenAl Extensions: %s\n\tALC Extensions: %s\n",
+		vendor, version, renderer, openALExtensions, ALCExtensions);
+	ALCint srate;
+	alcGetIntegerv(m_device, ALC_FREQUENCY, 1, &srate);
+	std::cout << "OpenAl device freq: " << srate << std::endl;
+}
+
 bool Audio::init()
 {
 	if (!(m_initialized & 1) || (m_initialized & 2))
@@ -118,6 +156,10 @@ bool Audio::init()
 			m_initialized |= 2; // set bit 1
 			return false;
 		}
+
+		ALCint srate;
+		alcGetIntegerv(m_device, ALC_FREQUENCY, 1, &srate);
+		std::cout << "OpenAl device freq: " << srate << std::endl;
 	}
 	if (!(m_initialized & 4))
 	{
@@ -132,9 +174,13 @@ bool Audio::init()
 			m_initialized |= 8; // set bit 4
 			return false;
 		}
+		query_information();
+		const char* hrtf = alcGetStringiSOFT(m_device, ALC_SOFT_HRTF, 0);
+		printf("\nHRTF: %s\n", hrtf);
 	}
-	if (!(m_initialized & 16)) listenerPosition(0, 0, 1.0f);
+	if (!(m_initialized & 16)) listenerPosition(0, 0, 0);
 	if (!(m_initialized & 32)) listenerVelocity(0, 0, 0);
 	if (!(m_initialized & 64)) listenerOrientation(0, 0, 1.0f, 0, 1.0f, 0);
+
 	return true;
 }
