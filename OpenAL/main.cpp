@@ -53,9 +53,9 @@ int main()
 	ALsizei size;
 	ALsizei freq;
 
-	load_wav("audio/Kilogram of scotland_16.wav", &data, &size, &freq);
+	load_wav("audio/bells_8bit_edit.wav", &data, &size, &freq);
 	std::cout << "Audio size: " << size << " Freq: " << freq << std::endl << std::endl;
-	alBufferData(buffer, AL_FORMAT_STEREO16, data, size, freq);
+	alBufferData(buffer, AL_FORMAT_MONO8, data, size, freq);
 	
 	openal_error();
 
@@ -76,49 +76,6 @@ int main()
 
 	getchar();
 	return 0;
-
-	//mp3 stuff
-
-	ALuint sourcemp3;
-	ALuint buffermp3;
-
-	alGenSources((ALuint)1, &sourcemp3);
-	alSourcef(sourcemp3, AL_PITCH, 1);
-	//alSourcef(m_source, AL_GAIN, 1);
-	alSource3f(sourcemp3, AL_POSITION, 0, 0, 0);
-	alSource3f(sourcemp3, AL_VELOCITY, 0, 0, 0);
-	alSourcei(sourcemp3, AL_LOOPING, AL_FALSE);
-
-	alSourcef(sourcemp3, AL_ROLLOFF_FACTOR, 2.0f);
-	alSourcef(sourcemp3, AL_REFERENCE_DISTANCE, 6);
-	alSourcef(sourcemp3, AL_MAX_DISTANCE, 15);
-
-	alGenBuffers((ALuint)1, &buffermp3);
-
-	mp3dec_t mp3dec;
-	mp3dec_file_info_t audioInfo;
-	if (mp3dec_load(&mp3dec, "audio/kilogram-of-scotland.mp3", &audioInfo, NULL, NULL))
-	{
-		std::cout << "ERROR: Failed to load mp3" << std::endl;
-		return 1;
-	}
-
-	alBufferData(buffermp3, AL_FORMAT_STEREO16, audioInfo.buffer, audioInfo.samples * sizeof(mp3d_sample_t), audioInfo.hz);
-	alSourcei(sourcemp3, AL_BUFFER, buffermp3);
-
-	//alSourcePlay(sourcemp3);
-
-	alGetSourcei(sourcemp3, AL_SOURCE_STATE, &state);
-	std::cout << "playing mp3: " << (state == AL_PLAYING) << std::endl;
-	do {
-		alGetSourcei(sourcemp3, AL_SOURCE_STATE, &state);
-	} while (state == AL_PLAYING);
-
-	std::cout << "Stopped playing mp3" << std::endl;
-
-	getchar();
-
-	return 0;
 }
 
 void openal_info(ALCdevice* dev)
@@ -138,7 +95,7 @@ void openal_info(ALCdevice* dev)
 
 void setListener()
 {
-	alListener3f(AL_POSITION, 0, 0, 0);
+	alListener3f(AL_POSITION, 0, 0, 1);
 	alListener3f(AL_VELOCITY, 0, 0, 0);
 	float orientation[] = { 0, 0, 1, 0, 1, 0 };
 	alGetListenerfv(AL_ORIENTATION, orientation);

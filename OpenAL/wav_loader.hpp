@@ -7,6 +7,7 @@
 #include <array>
 #include <vector>
 #include <cassert>
+#include <cmath>
 
 typedef int32_t int32;
 typedef int16_t int16;
@@ -114,10 +115,28 @@ void load_wav(cstring filePath, unsigned char** data, int* size, int* freq)
 	memcpy(&wave_data.subChunck2Size, (void*)&fileData[40], 4);
 	std::cout << "subChunck2Size: " << wave_data.subChunck2Size << std::endl;
 
-	*data = new unsigned char[fileData.size() - 44];
-	memcpy(*data, (void*)&fileData[44], fileData.size() - 44);
-	std::cout << "File Data size: " << fileData.size()-44 << std::endl;
-	*size = (fileData.size() - 44);
+	int dataSize = (fileData.size() - 44);
+	std::cout << "mono data size: " << dataSize << std::endl;
+	std::cout << "stereo data size: " << fileData.size()-44 << std::endl;
+	/*unsigned char* left = new unsigned char[dataSize];
+	memcpy(left, (void*)&fileData[44], dataSize);
+	unsigned char* right = new unsigned char[dataSize];
+	memcpy(right, (void*)&fileData[dataSize + 44], dataSize);*/
+
+	unsigned char* mono = new unsigned char[dataSize/2];
+	int j = 0;
+	for (int i = 0; i < dataSize; i += 2)
+	{
+		int left = fileData[44 + i];
+		int right = fileData[44 + i+1];
+		char add = (left + right) / 2; // add the two volumes
+		mono[j] = add;
+		++j;
+	}
+
+	*size = dataSize / 2;// (fileData.size() - 44);
+	*data = new unsigned char[*size];
+	memcpy(*data, mono, dataSize/2);
 
 	*freq = wave_format.sampleRate;
 	std::cout << "Loaded audio file!" << std::endl;
