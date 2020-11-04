@@ -19,6 +19,16 @@ void openal_error();
 
 int main()
 {
+	const ALchar* devices = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+	const ALchar* defaultDevice = alcGetString(NULL, ALC_DEFAULT_DEVICE_SPECIFIER);
+	std::cout << "Available devices: \n" << devices << std::endl;
+	std::cout << "Default device: " << defaultDevice << std::endl;
+
+	const ALchar* captureDevices = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
+	const ALchar* defaultCaptureDevice = alcGetString(NULL, ALC_CAPTURE_DEFAULT_DEVICE_SPECIFIER);
+	std::cout << "\nAvailable capture devices: \n" << captureDevices << std::endl;
+	std::cout << "Default capture device: " << defaultCaptureDevice << std::endl;
+
 	ALCdevice* device = alcOpenDevice(NULL);
 	if (!device) std::cout << "Device failed to init" << std::endl;
 	ALCcontext* context = alcCreateContext(device, NULL);
@@ -26,6 +36,11 @@ int main()
 	
 	openal_error();
 	setListener();
+
+	ALboolean eax2 = alIsExtensionPresent("EAX2.0");
+	std::cout << "EAX2.0: " << (bool)(eax2) << std::endl;
+
+	getchar();
 
 	ALuint source;
 	ALuint buffer;
@@ -53,7 +68,7 @@ int main()
 	ALsizei size;
 	ALsizei freq;
 
-	load_wav("audio/bells_8bit_edit.wav", &data, &size, &freq);
+	load_wav("audio/kilogram-of-scotland_mono8_192000.wav", &data, &size, &freq);
 	std::cout << "Audio size: " << size << " Freq: " << freq << std::endl << std::endl;
 	alBufferData(buffer, AL_FORMAT_MONO8, data, size, freq);
 	
