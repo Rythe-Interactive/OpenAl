@@ -4,6 +4,8 @@
 #include <AL/alc.h>
 #define AL_ALEXT_PROTOTYPES
 #include <AL/alext.h>
+#include <AL/efx.h>
+
 #include "wav_loader.hpp"
 
 #define MINIMP3_IMPLEMENTATION
@@ -31,16 +33,31 @@ int main()
 
 	ALCdevice* device = alcOpenDevice(NULL);
 	if (!device) std::cout << "Device failed to init" << std::endl;
-	ALCcontext* context = alcCreateContext(device, NULL);
+
+	ALCint attribs[] = { ALC_FREQUENCY, 44100, 0 };
+	ALCcontext* context = alcCreateContext(device, attribs);
 	if (!alcMakeContextCurrent(context)) std::cout << "Context failed to be current" << std::endl;
-	
+
 	openal_error();
 	setListener();
 
-	ALboolean eax2 = alIsExtensionPresent("EAX2.0");
-	std::cout << "EAX2.0: " << (bool)(eax2) << std::endl;
+	openal_info(device);
 
-	getchar();
+	ALint resamplers = alGetInteger(AL_NUM_RESAMPLERS_SOFT);
+	std::cout << "Resamplers: " << resamplers << std::endl;
+
+	ALint auxSends;
+	alcGetIntegerv(device, ALC_MAX_AUXILIARY_SENDS, 1, &auxSends);
+	std::cout << "Aux sends available: " << auxSends << std::endl;
+
+	for (int i = 0; i < resamplers; ++i)
+	{
+		std::cout << "\t[" << i << "]: " << alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, i);
+	}
+
+	ALint defaultResampler = alGetInteger(AL_DEFAULT_RESAMPLER_SOFT);
+	std::cout << "\nDefault resampler: " << defaultResampler << " - " << alGetStringiSOFT(AL_RESAMPLER_NAME_SOFT, defaultResampler) << std::endl;
+
 
 	ALuint source;
 	ALuint buffer;
@@ -57,25 +74,58 @@ int main()
 	openal_error();
 	alSourcei(source, AL_LOOPING, AL_FALSE);
 	openal_error();
+	alSourcei(source, AL_SOURCE_RESAMPLER_SOFT, 1);
+	openal_error();
+
+
+	ALuint effectSlot;
+	alGenAuxiliaryEffectSlots(1, &effectSlot);
+	ALuint effect;
+	alGenEffects(1, &effect);
+
+	alEffecti(effect, AL_EFFECT_TYPE, AL_EFFECT_EAXREVERB);
+	openal_error();
+	alEffectf(effect, AL_EAXREVERB_DECAY_TIME, 5.0f);
+	openal_error();
+
+	ALuint filter;
+	alGenFilters(1, &filter);
+
+	alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
+	openal_error();
+	alFilteri(filter, AL_LOWPASS_GAIN, 0.5f);
+	openal_error();
+	alFilteri(filter, AL_LOWPASS_GAINHF, 0.5f);
+	openal_error();
+
+	alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_EFFECT, effect);
+	openal_error();
+	
+
+	alSource3i(source, AL_AUXILIARY_SEND_FILTER, effectSlot, 1, filter);
+	openal_error();
+	alSourcei(source, AL_DIRECT_FILTER, filter);
+	openal_error();
+
 
 	alGenBuffers(1, &buffer);
 	openal_error();
 
-	openal_info(device);
 	std::cout << "\n------------------------------\n";
 
 	unsigned char* data = nullptr;
 	ALsizei size;
 	ALsizei freq;
 
-	load_wav("audio/kilogram-of-scotland_mono8_192000.wav", &data, &size, &freq);
+	load_wav("audio/kilogram-of-scotland_mono8.wav", &data, &size, &freq);
 	std::cout << "Audio size: " << size << " Freq: " << freq << std::endl << std::endl;
 	alBufferData(buffer, AL_FORMAT_MONO8, data, size, freq);
-	
 	openal_error();
 
 	alSourcei(source, AL_BUFFER, buffer);
 	openal_error();
+	getchar();
+	
 	alSourcePlay(source);
 	openal_error();
 	

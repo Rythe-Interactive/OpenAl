@@ -49,7 +49,7 @@ struct WAVE_Data
 	int32 subChunck2Size;
 };
 
-void load_wav(cstring filePath, unsigned char** data, int* size, int* freq, bool resample = false)
+void load_wav(cstring filePath, unsigned char** data, int* size, int* freq, bool resample = false, bool toInt16 = false)
 {
 	WAVE_Format wave_format;
 	RIFF_Header riff_header;
@@ -119,35 +119,49 @@ void load_wav(cstring filePath, unsigned char** data, int* size, int* freq, bool
 	int dataSize = (fileData.size() - 44);
 
 	std::cout << "Original size: " << dataSize << std::endl;
-
-	int upSampledRate = 4;
-	int upsampledDataSize = dataSize * upSampledRate;
-
-	unsigned char* upSampledData = new unsigned char[upsampledDataSize];
-	int j = 0;
-	for (size_t i = 0; i < dataSize; ++i)
+	byte* audioData;
+	if (toInt16 && wave_format.bitsPerSample == 32)
 	{
-		if (i == (dataSize - 1))
-		{
-			// end of the loop
-			upSampledData[i] = fileData[44 + i];
-			upSampledData[i+1] = fileData[44 + i];
-			break;
-		}
-		upSampledData[j] = fileData[44 + i];
-		upSampledData[j + 2] = static_cast<unsigned char>(static_cast<int16>(fileData[44 + i] + fileData[44 + i + 1]) / 2);
-		upSampledData[j + 1] = static_cast<unsigned char>(static_cast<int16>(fileData[44 + i] + upSampledData[j+2]) / 2);
-		upSampledData[j + 3] = static_cast<unsigned char>(static_cast<int16>(upSampledData[j+2] + fileData[44 + i + 1]) / 2);
-		j += upSampledRate;
+		//audiodata
+
+	}
+	else
+	{
+		audioData = new byte[dataSize];
+		memcpy(audioData, (void*)&fileData[44], dataSize);
+		delete[] audioData;
 	}
 
 	if (resample)
 	{
+		int upSampledRate = 4;
+		int upsampledDataSize = dataSize * upSampledRate;
+
+		unsigned char* upSampledData = new unsigned char[upsampledDataSize];
+		int j = 0;
+		for (size_t i = 0; i < dataSize; ++i)
+		{
+			if (i == (dataSize - 1))
+			{
+				// end of the loop
+				upSampledData[i] = fileData[44 + i];
+				upSampledData[i + 1] = fileData[44 + i];
+				break;
+			}
+			upSampledData[j] = fileData[44 + i];
+			upSampledData[j + 2] = static_cast<unsigned char>(static_cast<int16>(fileData[44 + i] + fileData[44 + i + 1]) / 2);
+			upSampledData[j + 1] = static_cast<unsigned char>(static_cast<int16>(fileData[44 + i] + upSampledData[j + 2]) / 2);
+			upSampledData[j + 3] = static_cast<unsigned char>(static_cast<int16>(upSampledData[j + 2] + fileData[44 + i + 1]) / 2);
+			j += upSampledRate;
+		}
+
 		*size = upsampledDataSize;
 		*data = new unsigned char[upsampledDataSize];
 		memcpy(*data, upSampledData, upsampledDataSize);
 
-		*freq = wave_format.sampleRate* upSampledRate;
+		*freq = wave_format.sampleRate * upSampledRate;
+
+		delete[] upSampledData;
 	}
 	else
 	{
@@ -157,8 +171,6 @@ void load_wav(cstring filePath, unsigned char** data, int* size, int* freq, bool
 
 		*freq = wave_format.sampleRate;
 	}
-
-	delete[] upSampledData;
 
 	std::cout << "New size: " << *size << std::endl;
 	std::cout << "Loaded audio file!" << std::endl;
