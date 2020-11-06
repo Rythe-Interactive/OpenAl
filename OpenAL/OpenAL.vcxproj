@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClInclude Include="minimp3.h" />
     <ClInclude Include="minimp3_ex.h" />
+    <ClInclude Include="ToneGenerator.hpp" />
     <ClInclude Include="wav_loader.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
