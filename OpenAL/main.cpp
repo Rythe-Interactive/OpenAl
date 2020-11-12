@@ -94,10 +94,10 @@ int main()
 
 	alFilteri(filter, AL_FILTER_TYPE, AL_FILTER_LOWPASS);
 	openal_error();
-	alFilteri(filter, AL_LOWPASS_GAIN, 0.5f);
-	openal_error();
-	alFilteri(filter, AL_LOWPASS_GAINHF, 0.5f);
-	openal_error();
+	//alFilteri(filter, AL_LOWPASS_GAIN, 1.0f);
+	//openal_error();
+	//alFilteri(filter, AL_LOWPASS_GAINHF, 1.0f);
+	//openal_error();
 
 	alAuxiliaryEffectSloti(effectSlot, AL_EFFECTSLOT_EFFECT, effect);
 	openal_error();
