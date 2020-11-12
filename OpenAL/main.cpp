@@ -67,7 +67,7 @@ int main()
 	openal_error();
 	alSourcef(source, AL_PITCH, 1);
 	openal_error();
-	alSourcef(source, AL_GAIN, 1);
+	alSourcef(source, AL_GAIN, 0.5f);
 	openal_error();
 	alSource3f(source, AL_POSITION, 0, 0, 0);
 	openal_error();
@@ -79,7 +79,7 @@ int main()
 	openal_error();
 
 
-	/*ALuint effectSlot;
+	ALuint effectSlot;
 	alGenAuxiliaryEffectSlots(1, &effectSlot);
 	ALuint effect;
 	alGenEffects(1, &effect);
@@ -106,7 +106,7 @@ int main()
 	alSource3i(source, AL_AUXILIARY_SEND_FILTER, effectSlot, 1, filter);
 	openal_error();
 	alSourcei(source, AL_DIRECT_FILTER, filter);
-	openal_error();*/
+	openal_error();
 
 
 	alGenBuffers(1, &buffer);
@@ -118,9 +118,10 @@ int main()
 	ALsizei size;
 	ALsizei freq = 192000;
 
-	//load_wav("audio/kilogram-of-scotland_mono8.wav", &data, &size, &freq);
-	generateTone(&data, &size, freq, 440, 1);
+	load_wav("audio/kilogram-of-scotland_mono8.wav", &data, &size, &freq);
+	//generateTone(&data, &size, freq, 440, 1, 1.0f);
 	std::cout << "Audio size: " << size << " Freq: " << freq << std::endl << std::endl;
+	std::cout << "Press enter to play" << std::endl;
 	alBufferData(buffer, AL_FORMAT_MONO8, data, size, freq);
 	openal_error();
 
